@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CODE 652</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000;
+            color: #ff0000;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            cursor: crosshair;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+        }
+
+        .title {
+            font-size: 4em;
+            text-shadow: 0 0 10px #ff0000;
+            animation: glitch 1s infinite;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 10px;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .buttons-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        .button {
+            padding: 15px;
+            background-color: #1a1a1a;
+            border: 1px solid #ff0000;
+            color: #ff0000;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px #ff0000;
+            background-color: #300;
+        }
+
+        .button:active {
+            transform: scale(0.95);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #000;
+            border: 2px solid #ff0000;
+            padding: 20px;
+            z-index: 1000;
+            text-align: center;
+            min-width: 300px;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 999;
+            backdrop-filter: blur(5px);
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 2px) }
+            40% { transform: translate(-2px, -2px) }
+            60% { transform: translate(2px, 2px) }
+            80% { transform: translate(2px, -2px) }
+            100% { transform: translate(0) }
+        }
+
+        @keyframes flicker {
+            0% { opacity: 1; }
+            50% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+
+        .special-code {
+            font-family: monospace;
+            font-size: 1.2em;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+            animation: flicker 2s infinite;
+        }
+
+        #jumpscare {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: 1001;
+        }
+
+        #forcedVideo {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: 1002;
+        }
+
+        #initialWarning {
+            display: block;
+            background-color: #000;
+            color: #ff0000;
+            text-align: center;
+            padding: 30px;
+            animation: flicker 3s infinite;
+        }
+
+        #initialWarning h2 {
+            margin-bottom: 20px;
+            animation: glitch 2s infinite;
+            font-size: 2em;
+        }
+
+        #initialWarning p {
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+
+        #initialWarning .button {
+            margin: 10px;
+            padding: 15px 30px;
+            min-width: 200px;
+        }
+
+        .warning-text {
+            color: #ff0000;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 5px #ff0000;
+        }
+    </style>
+</head>
+<body>
+    <!-- הקובץ נמצא בתיקיית media -->
+    <audio id="background-music" loop>
+        <source src="./media/background-music.mp3" type="audio/mpeg">
+    </audio>
+    
+    <!-- Initial Warning Modal -->
+    <div class="overlay" id="initialOverlay" style="display: block;"></div>
+    <div class="modal" id="initialWarning" style="display: block;">
+        <h2>אזהרה</h2>
+        <p class="warning-text">האם אתה בטוח שאתה רוצה להיכנס למשחק?</p>
+        <button class="button" onclick="startGame()">כן, אני מוכן</button>
+        <button class="button" onclick="window.close()">לא, צא מכאן</button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container" id="mainContent">
+        <h1 class="title">CODE 652</h1>
+        <div class="buttons-grid" id="buttonsGrid"></div>
+    </div>
+    
+    <!-- Exit Modal -->
+    <div class="overlay" id="overlay"></div>
+    <div class="modal" id="exitModal">
+        <h2>האם אתה בטוח שאתה רוצה לצאת?</h2>
+        <button class="button" onclick="exitSite()">אני מודה לסיכונים ולהשפעות שיצאו מתוצאה זו</button>
+        <button class="button" onclick="closeModal()">לא 652</button>
+    </div>
+    
+    <!-- גם הוידאו נמצא בתיקיית media -->
+    <video id="jumpscare" src="./media/jumpscare.mp4"></video>
+    <video id="forcedVideo" src="./media/scary-video.mp4"></video>
+
+    <script>
+        // DOM Elements
+        const backgroundMusic = document.getElementById('background-music');
+        const buttonsGrid = document.getElementById('buttonsGrid');
+        const overlay = document.getElementById('overlay');
+        const exitModal = document.getElementById('exitModal');
+        const jumpscare = document.getElementById('jumpscare');
+        const forcedVideo = document.getElementById('forcedVideo');
+        const mainContent = document.getElementById('mainContent');
+        
+        // State tracking
+        let hasPlayedVideo = false;
+        
+        // Game initialization
+        function startGame() {
+            document.getElementById('initialWarning').style.display = 'none';
+            document.getElementById('initialOverlay').style.display = 'none';
+            mainContent.style.visibility = 'visible';
+            backgroundMusic.play();
+            createButtons();
+        }
+
+        // Create all buttons
+        function createButtons() {
+            for (let i = 0; i < 60; i++) {
+                const button = document.createElement('button');
+                button.className = 'button';
+                button.textContent = `${i + 1}`;
+                
+                if (i === 32) {
+                    button.onclick = triggerJumpscare;
+                } else if (i === 45) {
+                    button.onclick = showExitModal;
+                } else if (i === 13) {
+                    button.onclick = showSpecialCode;
+                } else if (i === 14) {
+                    button.onclick = playForcedVideo;
+                } else {
+                    button.onclick = disappearButton;
+                }
+                
+                buttonsGrid.appendChild(button);
+            }
+        }
+        
+        // Button actions
+        function triggerJumpscare() {
+            jumpscare.style.display = 'block';
+            const screamAudio = new Audio('/api/placeholder/audio/scream');
+            screamAudio.play();
+            setTimeout(() => {
+                jumpscare.style.display = 'none';
+            }, 1500);
+        }
+
+        function playForcedVideo() {
+            if (!hasPlayedVideo) {
+                forcedVideo.style.display = 'block';
+                forcedVideo.play();
+                hasPlayedVideo = true;
+                
+                forcedVideo.onended = function() {
+                    forcedVideo.style.display = 'none';
+                };
+            }
+        }
+        
+        function showExitModal() {
+            overlay.style.display = 'block';
+            exitModal.style.display = 'block';
+        }
+        
+        function closeModal() {
+            overlay.style.display = 'none';
+            exitModal.style.display = 'none';
+        }
+        
+        function exitSite() {
+            window.close();
+            // Fallback if window.close() is blocked
+            window.location.href = "about:blank";
+        }
+        
+        function disappearButton(event) {
+            event.target.style.display = 'none';
+        }
+        
+        function showSpecialCode() {
+            const codeElement = document.createElement('div');
+            codeElement.className = 'special-code';
+            codeElement.textContent = 'code ̉́̀ộ̉́̀ộ́̉́̀ốệ̉ộ̀̉́̀ộ́̉̉ộ́̀̉ộ̣́̉́̀̉ô';
+            event.target.parentNode.replaceChild(codeElement, event.target);
+        }
+        
+        // Random button effects
+        setInterval(() => {
+            const buttons = document.querySelectorAll('.button');
+            const randomButton = buttons[Math.floor(Math.random() * buttons.length)];
+            if (randomButton) {
+                randomButton.style.transform = 'scale(1.2) skew(10deg)';
+                setTimeout(() => {
+                    randomButton.style.transform = 'scale(1) skew(0deg)';
+                }, 200);
+            }
+        }, 2000);
+
+        // Prevent right-click
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // Prevent common keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.altKey || e.metaKey) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>
